@@ -72,21 +72,21 @@ Files and Folders Orientation
 		Script which handles Conversations
 
 2) Files
-	Conversation/smalltalk.py
-		Handles all smalltalk replies
-	Conversation/fallback.py
-		Handles all fallback replies
-	Training/Training.py
-		Trains models for an intelligent chatbot
-	Utils/slots.py
-		Slots detection script ( In Progress )
-	Utils/utterance.py
-		Intent detection script( In Progress )
-		Handles Intent to Responses and slot filling
-	./run.py
-		Trains Model on initialization
-		Stores Global Variables
-		Interface with Telegram
-		Interface with utterance.py
+	- Conversation/smalltalk.py
+		- Handles all smalltalk replies
+	- Conversation/fallback.py
+		- Handles all fallback replies
+	- Training/Training.py
+		- Trains models for an intelligent chatbot
+	- Utils/slots.py
+		- Slots detection script ( In Progress )
+	- Utils/utterance.py
+		- Intent detection script( In Progress )
+		- Handles Intent to Responses and slot filling
+	- ./run.py
+		- Trains Model on initialization
+		- Stores Global Variables
+		- Interface with Telegram
+		- Interface with utterance.py
 
 
