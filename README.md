@@ -12,21 +12,21 @@ Building of the bot is still in progress.
 Installation
 -------------
 1) Creating Environment
-	conda create -n venv python=3.7 scikit-learn pandas numpy pickle nltk itertools spacy
+	- conda create -n venv python=3.7 scikit-learn pandas numpy pickle nltk itertools spacy
 2) Activating Environment
-	conda activate venv
+	- conda activate venv
 3) Installing other packages
-	pip install python-telegram-bot pycrfsuite 
-	python -m spacy download en_core_web_sm
+	- pip install python-telegram-bot pycrfsuite 
+	- python -m spacy download en_core_web_sm
 	
-	*** USE THE FOLLOWING ONLY IF YOU NEED TO EDIT TRAINING PHRASES ***
-	pip install snips-nlu 
+	### USE THE FOLLOWING ONLY IF YOU NEED TO EDIT TRAINING PHRASES 
+	- pip install snips-nlu 
 
 
 Running the Bot
 ---------------
 1) Edit run.py
-	- Change TokenKey = "<your token key>"
+	- Change TokenKey = "your own token key"
 2) Use cmd and execute python run.py
 
 
@@ -36,14 +36,17 @@ Editing the Training Utterance/Slots
 2) Go to Dataset/YAML folder
 3) Create YAML File with the format provided (use smalltalk.yaml, intent should be groupname_intent)
 4) Converting YAML to JSON
-	Command line: snips-nlu generate-dataset en dataset.yaml > dataset.json
+	Command line: 
+<pre><code>snips-nlu generate-dataset en dataset.yaml > dataset.json</pre></code>
 5) Cut Json file to Dataset/Converted
 6) Go to Training/Training.py
 7) Find and edit:
+<pre><code>
 	def train():
             trainingfile = "Dataset\\Converted\\yourfile.json"
 	    intentdataset(trainingfile)
 	    slotdetection(trainingfile)
+	    </pre></code>
 8) Training will automatically run when run.py is initiated
 
 
