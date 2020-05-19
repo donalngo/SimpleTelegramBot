@@ -6,6 +6,7 @@ Created on Thu Feb 27 10:48:13 2020
 """
 import en_core_web_sm
 import pycrfsuite
+from utils.NametoSymb import convert
 nlp = en_core_web_sm.load()
 
 def getslots (utterance):
@@ -54,6 +55,7 @@ def getslots (utterance):
     
     def sent2features(sent):
         return [word2features(sent, i) for i in range(len(sent))]
+    
 
     sentlist = []
     posList = []
@@ -65,6 +67,17 @@ def getslots (utterance):
     utterance_tokens = sent2features(sentlist)
     tagger = pycrfsuite.Tagger()
     tagger.open('models\\CRFModel.crfsuite')
-    print("Predicted:[\'", '\', \''.join(tagger.tag(utterance_tokens))+'\']')
 
+    results = tagger.tag(utterance_tokens)
+    zipped = [i if i[1][1] != '-'  else (i[0],i[1][2:]) for i in zip(utterance.split(), results) if i[1] != 'O' ]
+    
+    slots = {i[1]:i[0] for i in zipped}
+
+    try:
+        slots['stockname'] = convert(slots['stockname'])
+    except:
+        slots['stockname'] = ""
+ 
+    return slots
   
+

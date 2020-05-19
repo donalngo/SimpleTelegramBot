@@ -10,27 +10,55 @@ import logging
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 import utils.utterance as utterance
-from Training import Training
+from Training import training
 
+
+# Command Handler
+def start(update, context):
+    """Send a message when the command /start is issued."""
+    update.message.reply_text('How are you ? I am Lucy. '
+                              'I can help you with Technology Stock price direction predictions '
+                              'and the stock news itself or any trending technology stock news or topics. '
+                              'OK, To get started, let me know which stock are you interested in ? '
+                              'To end the conversation just say Bye. ')
+
+
+# Chat Handler
+def chat(update, context):
+    # reply = utterance.getreply(update.message.text)
+    reply = utterance.getreply(update, context)
+    print("User text : ", update.message.text)
+    print("Reply to user:" + str(reply))
+    context.bot.send_message(chat_id=update.effective_chat.id, text=reply["Reply"]
+                             , parse_mode=telegram.ParseMode.HTML)
+
+def changedate(update, context):
+    userdata = context.user_data
+    userdata["PI"] = "date"
+    context.bot.send_message(chat_id=update.effective_chat.id, text="which date?"
+                             , parse_mode=telegram.ParseMode.HTML)
 if __name__ == '__main__':
-    Training.train()
-    TokenKey = "<token key here>"
-    
+    #training.train()
+    try:
+        with open('z.token key.txt', 'r') as file:
+            TokenKey = file.read().replace('\n', '')
+    except :
+        TokenKey = "<your token key here>"
+        if TokenKey == "<your token key here>":
+            print('invalid token key')
+
     updater = Updater(token=TokenKey, use_context=True)
-    
+
     dispatcher = updater.dispatcher
-    
+
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CommandHandler("date", changedate))
+
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                         level=logging.INFO)
-    
-    
-    def chat(update, context):
-        reply = utterance.getreply(update.message.text)
-        print(reply)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=reply["Reply"])
-    
-    echo_handler = MessageHandler(Filters.text, chat)
-    dispatcher.add_handler(echo_handler)
-    
-    
+                        level=logging.INFO)
+
+    dispatcher.add_handler(MessageHandler(Filters.text, chat))
+
     updater.start_polling()
+
+    updater.idle()

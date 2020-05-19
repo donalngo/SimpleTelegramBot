@@ -27,8 +27,9 @@ from sklearn.metrics import accuracy_score
 from sklearn import preprocessing
 from sklearn import metrics
 from sklearn.preprocessing import LabelBinarizer
-from conversation import smalltalk, fallback, stocks
-
+from conversation import smalltalk, fallback, Finance
+from utils.intent import intentdetection
+import settings.store
 
 import pycrfsuite
 import spacy
@@ -40,18 +41,18 @@ from os import getcwd, chdir
 
 
 
-def intentdetection (utterance):
-    intentlist = pickle.load(open("models//intentlist.pkl",'rb'))
-    vectorizer = pickle.load(open("models//vectorizer.pk",'rb'))
-    kbest = pickle.load(open("models//kbest.pk",'rb'))
-    svm = pickle.load(open("models//svm.pk",'rb'))
-    
-    utterance_vect = vectorizer.transform([utterance])
-    utterance_kbest = kbest.transform(utterance_vect)
-    utterance_pred, pred_score = int(svm.predict(utterance_kbest)), np.amax(svm.predict_proba(utterance_kbest)[0])
-    print(utterance_pred)
-    utterance_intent = intentlist[utterance_pred]
-    return utterance_intent , pred_score
+#def intentdetection (utterance):
+#    intentlist = pickle.load(open("models//intentlist.pkl",'rb'))
+#    vectorizer = pickle.load(open("models//vectorizer.pk",'rb'))
+#    kbest = pickle.load(open("models//kbest.pk",'rb'))
+#    svm = pickle.load(open("models//svm.pk",'rb'))
+#    
+#    utterance_vect = vectorizer.transform([utterance])
+#    utterance_kbest = kbest.transform(utterance_vect)
+#    utterance_pred, pred_score = int(svm.predict(utterance_kbest)), np.amax(svm.predict_proba(utterance_kbest)[0])
+#    print(utterance_pred)
+#    utterance_intent = intentlist[utterance_pred]
+#    return utterance_intent , pred_score
 
 def reformatting (Reply, Intent, Confidence):
     result = {"Reply" : Reply,
@@ -59,20 +60,74 @@ def reformatting (Reply, Intent, Confidence):
             "Confidence": Confidence}
     return result
 
-def getreply(utterance):
-    intent, pred_score = intentdetection(utterance)
-    if pred_score <= 0.2 :
-        method_to_call = fallback.smalltalk_agent_acquaintance()
-        result = reformatting("".join(method_to_call), intent, pred_score)
+
+
+#def getreply(update, context):
+#    utterance = update.message.text
+#    intent, pred_score = intentdetection(utterance)
+#    if pred_score <= 0.2 :
+#        method_to_call = fallback()
+#        result = reformatting("".join(method_to_call), intent, pred_score)
+#    else:
+#        if intent[:intent.index('_')] == 'smalltalk':
+#            method_to_call = getattr(smalltalk, intent)()
+#            result = reformatting("".join(method_to_call), intent, pred_score)
+
+#        elif intent[:intent.index('_')] == 'Finance':
+#            method_to_call = getattr(Finance, intent)(utterance)
+#            result = reformatting("".join(method_to_call), intent, pred_score)
+        
+#    return result
+    
+
+
+def getreply(update, context):
+    settings.store = context
+    utterance = update.message.text
+    user_data = context.user_data
+    try:
+        context.user_data["PI"]
+    except:
+        context.user_data["PI"] = ""
+
+    if context.user_data["PI"] == "date":
+        context.user_data["DATE"] = utterance
+        context.user_data["PI"] = ""
+
+        result = reformatting("".join("date changed to "+context.user_data["DATE"]), 0, 0)
     else:
-        if intent[:intent.index('_')] == 'smalltalk':
-            method_to_call = getattr(smalltalk, intent)()
+        intent, pred_score = intentdetection(utterance)
+        if pred_score <= 0.2 :
+
+            method_to_call = fallback()
             result = reformatting("".join(method_to_call), intent, pred_score)
 
-        elif intent[:intent.index('_')] == 'others':
-            method_to_call = getattr(others, intent)()
-            result = reformatting("".join(method_to_call), intent, pred_score)
-        
+        else:
+
+            if intent[:intent.index('_')] == 'smalltalk':
+                method_to_call = getattr(smalltalk, intent)()
+                result = reformatting("".join(method_to_call), intent, pred_score)
+
+            elif intent[:intent.index('_')] == 'Finance':
+                    if intent[intent.index('_')+1:intent.index('_')+1+intent[intent.index('_')+1:].index('_')] == 'slots':
+                        if user_data["PI"] != "":
+                            print("Past Context route to " + user_data["PI"])
+                            method_to_call = getattr(Finance, user_data["PI"])(utterance)
+                            result = reformatting("".join(method_to_call), intent, pred_score)
+                        else:
+                            reply = "What do you want to know about " + utterance + "?"
+                            user_data["ticker"] = utterance
+                            print("slots: " + user_data["ticker"])
+                            result = reformatting("".join(reply), 0, 0)
+                    else:
+                        try:
+                            user_data["PI"] = intent
+                            method_to_call = getattr(Finance, intent)(utterance)
+                            print("new intent " + intent)
+                            result = reformatting("".join(method_to_call), intent, pred_score)
+                        except:
+                            method_to_call = getattr(fallback, "fallback")()
+                            result = reformatting("".join(method_to_call), 0, 0)
     return result
     
 
